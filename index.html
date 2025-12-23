@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Earnova – Task Earning Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: Arial; background:#0f172a; color:#fff; margin:0 }
+    .box {
+      max-width:420px; margin:30px auto; background:#020617;
+      padding:20px; border-radius:10px
+    }
+    input, button {
+      width:100%; padding:12px; margin-top:10px;
+      border-radius:6px; border:none; font-size:15px
+    }
+    input { background:#111827; color:#fff }
+    button { background:#22c55e; font-weight:bold; cursor:pointer }
+    .link { text-align:center; margin-top:10px; color:#38bdf8; cursor:pointer }
+    .hidden { display:none }
+    h2, p { text-align:center }
+    .task {
+      background:#111827; padding:15px; border-radius:8px; margin-top:10px
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIGNUP -->
+<div class="box" id="signupBox">
+  <h2>Earnova – Sign Up</h2>
+  <input id="sEmail" placeholder="Email">
+  <input id="sPass" type="password" placeholder="Password">
+  <button onclick="signup()">Create Account</button>
+  <div class="link" onclick="showLogin()">Login</div>
+</div>
+
+<!-- LOGIN -->
+<div class="box hidden" id="loginBox">
+  <h2>Earnova – Login</h2>
+  <input id="lEmail" placeholder="Email">
+  <input id="lPass" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+  <div class="link" onclick="showSignup()">Create Account</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="box hidden" id="dashboard">
+  <h2>Dashboard</h2>
+  <p><b>Balance:</b> $<span id="balance">0</span></p>
+
+  <div class="task">
+    <p>Task 1: Daily Login</p>
+    <button onclick="earn(1)">Complete & Earn $1</button>
+  </div>
+
+  <div class="task">
+    <p>Task 2: Watch Ad</p>
+    <button onclick="earn(2)">Complete & Earn $2</button>
+  </div>
+
+  <button style="margin-top:15px;background:#ef4444" onclick="logout()">Logout</button>
+</div>
+
+<script>
+  // 🔥 REPLACE WITH YOUR FIREBASE CONFIG
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  function showLogin(){ signupBox.classList.add("hidden"); loginBox.classList.remove("hidden"); }
+  function showSignup(){ loginBox.classList.add("hidden"); signupBox.classList.remove("hidden"); }
+
+  function signup(){
+    auth.createUserWithEmailAndPassword(sEmail.value, sPass.value)
+    .then(cred=>{
+      db.collection("users").doc(cred.user.uid).set({ balance:0 });
+      showDashboard();
+    }).catch(e=>alert(e.message));
+  }
+
+  function login(){
+    auth.signInWithEmailAndPassword(lEmail.value, lPass.value)
+    .then(showDashboard).catch(e=>alert(e.message));
+  }
+
+  function logout(){ auth.signOut().then(()=>location.reload()); }
+
+  function showDashboard(){
+    signupBox.classList.add("hidden");
+    loginBox.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    loadBalance();
+  }
+
+  function loadBalance(){
+    const uid = auth.currentUser.uid;
+    db.collection("users").doc(uid).onSnapshot(doc=>{
+      balance.innerText = doc.data().balance;
+    });
+  }
+
+  function earn(amount){
+    const uid = auth.currentUser.uid;
+    const ref = db.collection("users").doc(uid);
+    ref.update({ balance: firebase.firestore.FieldValue.increment(amount) });
+    alert("Task completed! +" + amount);
+  }
+
+  auth.onAuthStateChanged(user=>{ if(user) showDashboard(); });
+</script>
+
+</body>
+</html>
