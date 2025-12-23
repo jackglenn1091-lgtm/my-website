@@ -2,58 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Earnova – Task Earning Platform</title>
+  <title>Task Earning Platform</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <style>
-    body { font-family: Arial; background:#0f172a; color:#fff; margin:0 }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
+    }
     .box {
-      max-width:420px; margin:30px auto; background:#020617;
-      padding:20px; border-radius:10px
+      max-width: 420px;
+      margin: 30px auto;
+      background: #020617;
+      padding: 20px;
+      border-radius: 10px;
     }
     input, button {
-      width:100%; padding:12px; margin-top:10px;
-      border-radius:6px; border:none; font-size:15px
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 15px;
     }
-    input { background:#111827; color:#fff }
-    button { background:#22c55e; font-weight:bold; cursor:pointer }
-    .link { text-align:center; margin-top:10px; color:#38bdf8; cursor:pointer }
-    .hidden { display:none }
-    h2, p { text-align:center }
+    input { background: #111827; color: #fff; }
+    button {
+      background: #22c55e;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .link {
+      text-align: center;
+      margin-top: 10px;
+      color: #38bdf8;
+      cursor: pointer;
+    }
+    .hidden { display: none; }
     .task {
-      background:#111827; padding:15px; border-radius:8px; margin-top:10px
+      background: #111827;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 10px;
     }
   </style>
 </head>
+
 <body>
 
 <!-- SIGNUP -->
 <div class="box" id="signupBox">
-  <h2>Earnova – Sign Up</h2>
-  <input id="sEmail" placeholder="Email">
-  <input id="sPass" type="password" placeholder="Password">
-  <button onclick="signup()">Create Account</button>
-  <div class="link" onclick="showLogin()">Login</div>
+  <h2>Create Account</h2>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="signup()">Sign Up</button>
+  <div class="link" onclick="showLogin()">Already have account?</div>
 </div>
 
 <!-- LOGIN -->
 <div class="box hidden" id="loginBox">
-  <h2>Earnova – Login</h2>
-  <input id="lEmail" placeholder="Email">
-  <input id="lPass" type="password" placeholder="Password">
+  <h2>Login</h2>
+  <input id="emailLogin" placeholder="Email">
+  <input id="passwordLogin" type="password" placeholder="Password">
   <button onclick="login()">Login</button>
-  <div class="link" onclick="showSignup()">Create Account</div>
+  <div class="link" onclick="showSignup()">Create account</div>
 </div>
 
 <!-- DASHBOARD -->
 <div class="box hidden" id="dashboard">
   <h2>Dashboard</h2>
-  <p><b>Balance:</b> $<span id="balance">0</span></p>
+  <p>Balance: $<span id="balance">0</span></p>
 
   <div class="task">
     <p>Task 1: Daily Login</p>
@@ -68,113 +86,95 @@
   <button style="margin-top:15px;background:#ef4444" onclick="logout()">Logout</button>
 </div>
 
-<script>
-  // 🔥 REPLACE WITH YOUR FIREBASE CONFIG
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    appId: "YOUR_APP_ID"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  function showLogin(){ signupBox.classList.add("hidden"); loginBox.classList.remove("hidden"); }
-  function showSignup(){ loginBox.classList.add("hidden"); signupBox.classList.remove("hidden"); }
-
-  function signup(){
-    auth.createUserWithEmailAndPassword(sEmail.value, sPass.value)
-    .then(cred=>{
-      db.collection("users").doc(cred.user.uid).set({ balance:0 });
-      showDashboard();
-    }).catch(e=>alert(e.message));
-  }
-
-  function login(){
-    auth.signInWithEmailAndPassword(lEmail.value, lPass.value)
-    .then(showDashboard).catch(e=>alert(e.message));
-  }
-
-  function logout(){ auth.signOut().then(()=>location.reload()); }
-
-  function showDashboard(){
-    signupBox.classList.add("hidden");
-    loginBox.classList.add("hidden");
-    dashboard.classList.remove("hidden");
-    loadBalance();
-  }
-
-  function loadBalance(){
-    const uid = auth.currentUser.uid;
-    db.collection("users").doc(uid).onSnapshot(doc=>{
-      balance.innerText = doc.data().balance;
-    });
-  }
-
-  
+<!-- FIREBASE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc, increment } 
-  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    getDoc,
+    updateDoc,
+    increment
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+  // 🔴 ADD YOUR FIREBASE CONFIG HERE LATER
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
-    authDomain: "earnova-97881.firebaseapp.com",
-    projectId: "earnova-97881",
-    storageBucket: "earnova-97881.appspot.com",
-    messagingSenderId: "1017116487776",
-    appId: "1:1017116487776:web:XXXXXXXX"
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    appId: "YOUR_APP_ID"
   };
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  window.signup = async function () {
-    const user = await createUserWithEmailAndPassword(auth, email.value, pass.value);
+  const signupBox = document.getElementById("signupBox");
+  const loginBox = document.getElementById("loginBox");
+  const dashboard = document.getElementById("dashboard");
+  const balanceText = document.getElementById("balance");
+
+  window.showLogin = () => {
+    signupBox.classList.add("hidden");
+    loginBox.classList.remove("hidden");
+  };
+
+  window.showSignup = () => {
+    loginBox.classList.add("hidden");
+    signupBox.classList.remove("hidden");
+  };
+
+  window.signup = async () => {
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+
+    const user = await createUserWithEmailAndPassword(auth, email, pass);
     await setDoc(doc(db, "users", user.user.uid), { balance: 0 });
-    showDashboard();
   };
 
-  window.login = async function () {
-    await signInWithEmailAndPassword(auth, email.value, pass.value);
-    showDashboard();
+  window.login = async () => {
+    const email = document.getElementById("emailLogin").value;
+    const pass = document.getElementById("passwordLogin").value;
+    await signInWithEmailAndPassword(auth, email, pass);
   };
 
-  window.logout = function () {
-    signOut(auth);
+  window.logout = async () => {
+    await signOut(auth);
     location.reload();
   };
-
-  function showDashboard() {
-    signupBox.classList.add("hidden");
-    loginBox.classList.add("hidden");
-    dashboard.classList.remove("hidden");
-    loadBalance();
-  }
 
   async function loadBalance() {
     const uid = auth.currentUser.uid;
     const snap = await getDoc(doc(db, "users", uid));
-    balance.innerText = snap.data().balance;
+    balanceText.innerText = snap.data().balance;
   }
 
-  window.earn = async function (amount) {
+  window.earn = async (amount) => {
     const uid = auth.currentUser.uid;
     await updateDoc(doc(db, "users", uid), {
       balance: increment(amount)
     });
-    alert("Task completed +"+amount);
     loadBalance();
+    alert("Task completed +$" + amount);
   };
 
   onAuthStateChanged(auth, user => {
-    if (user) showDashboard();
+    if (user) {
+      signupBox.classList.add("hidden");
+      loginBox.classList.add("hidden");
+      dashboard.classList.remove("hidden");
+      loadBalance();
+    }
   });
 </script>
+
 </body>
 </html>
